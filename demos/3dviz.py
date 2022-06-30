@@ -7,7 +7,11 @@ import camviz as cv
 # Flags
 with_depth_input = True
 crop_top = True
-per = 0.45
+crop_per = 0.45
+
+# Show a few frames for test
+test_show = True
+frames_to_show = 20
 
 # Load predicted depth maps
 data = np.load('demos/data/rgbd_sparse_hr.npz', allow_pickle=True)
@@ -15,12 +19,21 @@ data = np.load('demos/data/rgbd_sparse_hr.npz', allow_pickle=True)
 # Parse dictionary information
 intrinsics = data['intrinsics']
 rgb = [np.copy(item) for item in data['rgb']]
+rgb_copy = [np.copy(item) for item in data['rgb']]
 depth = [np.copy(item) for item in data['depth']]
 viz = [np.copy(item) for item in data['viz']]
 depth_input = [np.copy(item) for item in data['depth_input']]
 
 n = len(rgb) # Get number of frames
 wh = rgb[0].shape[:2][::-1] # Get image resolution
+
+if test_show and frames_to_show <= n:
+    rgb = rgb[:frames_to_show]
+    rgb_copy = rgb_copy[:frames_to_show]
+    depth = depth[:frames_to_show]
+    viz = viz[:frames_to_show]
+    depth_input = depth_input[:frames_to_show]
+    n = frames_to_show
 
 
 # ********************** Create display windows **********************
@@ -101,9 +114,8 @@ else:
     color_dict = {0: rgb_clr_name, 1: viz_clr_name, 2: hgt_clr_name}
 
 # Second view
-h_crop = int(per * wh[1])
+h_crop = int(crop_per * wh[1])
 points_pred_copy = [np.copy(d) for d in points_pred]
-rgb_copy = [np.copy(item) for item in data['rgb']]
 # Crop to the top areas
 if crop_top:
     points_pred_copy = [item.reshape(wh[1], wh[0], 3) for item in points_pred_copy]
